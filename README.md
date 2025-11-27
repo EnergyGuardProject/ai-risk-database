@@ -267,10 +267,12 @@ pytest
 ```
 
 ## TODOs
-- Schema will be constantly evolved based on the needs...
+- Schema will be constantly evolved based on the needs.
+- The database will be gradually enriched by studying the related databases extensively.
+- The database will be gradually enriched through interviews with pilots and potential EnergyGuard future clients and their experience regarding their specific energy use cases.  
 - Create a user friendly front-end to explore the database and add risks as a stakeholder. The front-end should be in accordance with the main template of the EnergyGuard platform.
 - Map to the acceptance environment of T5.2 as follows: Create a matchmaking service (maybe LLM based) that based on the type of AI application tested by the client displays the appropriate risks and alerts for their specific type of AI system.
-- Pytests
+- Pytests need to be implemented at some point.
 - Database should be public. It can only be modified by EnergyGuard admins though.
 
 ## License
