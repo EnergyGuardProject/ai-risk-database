@@ -268,10 +268,11 @@ pytest
 
 ## TODOs
 - Schema will be constantly evolved based on the needs. (HAL)
+- Need to check and potential add other frameworks such as OWASP top 10 for LLMs (vital for GridFM), top 10 for ML, and Snowlflake AI security. (ICCS)
 - Database should be public. It should be designed so that it can be easily modified by EnergyGuard administrators though. Preferrably through dedicated UI for admins. (HAL)
 - The database will be gradually enriched by admins by studying the related databases extensively. (HAL, ICCS)
 - The database will be gradually enriched by admins through interviews with pilots and potential EnergyGuard future clients and their experience regarding their specific energy use cases.  (ICCS, HAL)
-- Create a user friendly front-end for the public to explore the database and add maybe risks as a stakeholder (?). The front-end should be in accordance with the main template of the EnergyGuard platform that soon will be uploaded in the project's github. (HAL)
+- Create a user friendly front-end for the public to explore the database and add maybe risks as a stakeholder (?). The front-end should be in accordance with the main template of the EnergyGuard platform that soon will be uploaded in the project's github. (ICCS)
 - Map to the acceptance environment of T5.2 as follows: Create a matchmaking service (maybe LLM based) that based on the type of AI application tested by the client displays the appropriate risks and alerts for their specific type of AI system. (ICCS)
 - Pytests need to be implemented at some point. (HAL)
 - Other tasks may arise as the task evolves... (HAL, ICCS)
