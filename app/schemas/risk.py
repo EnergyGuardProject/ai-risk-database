@@ -3,7 +3,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from app.core.vocab import ALLOWED_ITOT_BOUNDARIES, ALLOWED_STATUSES
+
 RISK_ID_PATTERN = r"^EG-R-\d{4,}$"
+
+
+def _validate_status(v: Optional[str]) -> Optional[str]:
+    if v is not None and v not in ALLOWED_STATUSES:
+        raise ValueError(f"status must be one of {sorted(ALLOWED_STATUSES)}")
+    return v
 
 
 class RiskCard(BaseModel):
@@ -29,6 +37,14 @@ class RiskCard(BaseModel):
     merge_hash: Optional[str] = None
     lifecycle_stage: Optional[str] = None
     risk_summary: Optional[str] = None
+    it_ot_boundary: Optional[str] = None
+
+    @field_validator("it_ot_boundary")
+    @classmethod
+    def validate_itot_boundary(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None and v not in ALLOWED_ITOT_BOUNDARIES:
+            raise ValueError(f"it_ot_boundary must be one of {sorted(ALLOWED_ITOT_BOUNDARIES)}")
+        return v
 
     @model_validator(mode="after")
     def set_stable_id(self) -> "RiskCard":
@@ -44,6 +60,8 @@ class RiskBase(BaseModel):
     status: Optional[str] = None
     version: Optional[str] = None
     card: RiskCard
+
+    _validate_status = field_validator("status")(_validate_status)
 
     @model_validator(mode="after")
     def align_stable_id(self) -> "RiskBase":
@@ -61,11 +79,15 @@ class RiskUpdate(BaseModel):
     version: Optional[str] = None
     card: Optional[RiskCard] = None
 
+    _validate_status = field_validator("status")(_validate_status)
+
 
 class RiskPatch(BaseModel):
     status: Optional[str]
     version: Optional[str]
     card_updates: Optional[Dict[str, Any]]
+
+    _validate_status = field_validator("status")(_validate_status)
 
     @field_validator("card_updates")
     def ensure_updates(cls, v: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:

@@ -3,17 +3,20 @@ from sqlalchemy.orm import Session
 
 from app.core.vocab import CATEGORY_DEFINITIONS, ENERGY_CONTEXT_DEFINITIONS, get_category_display_name, get_context_display_name
 from app.db.models import Base, Category, EnergyContext
-from app.db.session import engine
+from app.db import session as db_session
 
 
 def init_db() -> None:
-    inspector = inspect(engine)
-    Base.metadata.create_all(bind=engine)
+    # Look up the engine on the module (not `from app.db.session import engine`):
+    # tests reassign app.db.session.engine at runtime via configure_engine(), and a
+    # name imported at module load time would keep pointing at the original engine.
+    inspector = inspect(db_session.engine)
+    Base.metadata.create_all(bind=db_session.engine)
     _seed_reference_tables()
 
 
 def _seed_reference_tables() -> None:
-    with Session(engine) as session:
+    with Session(db_session.engine) as session:
         for category_id, meta in CATEGORY_DEFINITIONS.items():
             if session.get(Category, category_id):
                 continue

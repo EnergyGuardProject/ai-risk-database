@@ -4,6 +4,7 @@ from typing import Generator
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import text
 
 from app.core import config
 from app.db import session as session_module
@@ -35,6 +36,8 @@ def client() -> Generator[TestClient, None, None]:
 def cleanup_db() -> Generator[None, None, None]:
     yield
     with session_module.get_session() as session:
-        session.execute("DELETE FROM risk_context")
-        session.execute("DELETE FROM risk_category")
-        session.execute("DELETE FROM risk")
+        session.execute(text("DELETE FROM risk_relationship"))
+        session.execute(text("DELETE FROM risk_use_case"))
+        session.execute(text("DELETE FROM risk_context"))
+        session.execute(text("DELETE FROM risk_category"))
+        session.execute(text("DELETE FROM risk"))
