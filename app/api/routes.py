@@ -7,8 +7,14 @@ from sqlalchemy.orm import Session
 
 from app.api.deps import enforce_api_token, get_db
 from app.core.config import settings
+from app.schemas.relationship import (
+    RiskRelationshipCreate,
+    RiskRelationshipResponse,
+    RiskUseCaseCreate,
+    RiskUseCaseResponse,
+)
 from app.schemas.risk import RiskBrief, RiskCreate, RiskPatch, RiskResponse, RiskUpdate
-from app.services import risk_service
+from app.services import relationship_service, risk_service
 from app.services.export_service import export_csv_stream, export_json_bytes
 
 router = APIRouter()
@@ -38,6 +44,15 @@ def list_risks(
         lifecycle_stage=lifecycle_stage,
         altai=altai,
     )
+
+
+@router.get("/risks/brief", response_model=List[RiskBrief])
+def brief_risks(
+    ids: Optional[str] = Query(default=None),
+    db: Session = Depends(get_db),
+) -> List[RiskBrief]:
+    id_list = ids.split(",") if ids else None
+    return risk_service.get_brief(db, id_list)
 
 
 @router.get("/risks/{risk_id}", response_model=RiskResponse)
@@ -89,13 +104,69 @@ def remove_risk(risk_id: str, db: Session = Depends(get_db)) -> Response:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
-@router.get("/risks/brief", response_model=List[RiskBrief])
-def brief_risks(
-    ids: Optional[str] = Query(default=None),
+@router.post(
+    "/risks/{risk_id}/relationships",
+    response_model=RiskRelationshipResponse,
+    status_code=201,
+    dependencies=[Depends(enforce_api_token)],
+)
+def add_relationship(
+    risk_id: str,
+    payload: RiskRelationshipCreate,
     db: Session = Depends(get_db),
-) -> List[RiskBrief]:
-    id_list = ids.split(",") if ids else None
-    return risk_service.get_brief(db, id_list)
+) -> RiskRelationshipResponse:
+    try:
+        return relationship_service.add_relationship(db, risk_id, payload)
+    except NoResultFound as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except relationship_service.DuplicateRelationshipError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@router.get("/risks/{risk_id}/relationships", response_model=List[RiskRelationshipResponse])
+def get_relationships(
+    risk_id: str,
+    direction: str = Query(default="both", description="'outgoing' | 'incoming' | 'both'"),
+    db: Session = Depends(get_db),
+) -> List[RiskRelationshipResponse]:
+    try:
+        return relationship_service.get_relationships(db, risk_id, direction=direction)
+    except NoResultFound as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@router.post(
+    "/risks/{risk_id}/use-cases",
+    response_model=RiskUseCaseResponse,
+    status_code=201,
+    dependencies=[Depends(enforce_api_token)],
+)
+def add_use_case(
+    risk_id: str,
+    payload: RiskUseCaseCreate,
+    db: Session = Depends(get_db),
+) -> RiskUseCaseResponse:
+    try:
+        return relationship_service.add_use_case(db, risk_id, payload)
+    except NoResultFound as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except relationship_service.DuplicateUseCaseError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+
+@router.get("/risks/{risk_id}/use-cases", response_model=List[RiskUseCaseResponse])
+def get_use_cases(
+    risk_id: str,
+    db: Session = Depends(get_db),
+) -> List[RiskUseCaseResponse]:
+    try:
+        return relationship_service.get_use_cases(db, risk_id)
+    except NoResultFound as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
 @router.get("/export/json")

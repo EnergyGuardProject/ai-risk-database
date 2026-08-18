@@ -9,6 +9,7 @@ from sqlalchemy import (
     String,
     Text,
     event,
+    func,
     text,
 )
 from sqlalchemy.dialects.postgresql import JSONB
@@ -19,13 +20,19 @@ Base = declarative_base()
 
 class Risk(Base):
     __tablename__ = "risk"
+    __table_args__ = (
+        CheckConstraint(
+            "status IS NULL OR status IN ('draft','pending_review','confirmed','pending_approval','deprecated')",
+            name="chk_status_vocab",
+        ),
+    )
 
     risk_id = Column(String, primary_key=True)
     status = Column(String, nullable=True)
     version = Column(String, nullable=True)
     card = Column(JSONB().with_variant(JSON, "sqlite"), nullable=False)
-    created_at = Column(DateTime, server_default=text("NOW()"), nullable=False)
-    updated_at = Column(DateTime, server_default=text("NOW()"), nullable=False)
+    created_at = Column(DateTime, server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime, server_default=func.now(), nullable=False)
 
     categories = relationship("RiskCategory", back_populates="risk", cascade="all, delete-orphan")
     contexts = relationship("RiskContext", back_populates="risk", cascade="all, delete-orphan")
@@ -84,6 +91,101 @@ class RiskContext(Base):
 
     risk = relationship("Risk", back_populates="contexts")
     context = relationship("EnergyContext")
+
+
+class RiskRelationship(Base):
+    __tablename__ = "risk_relationship"
+    __table_args__ = (
+        CheckConstraint(
+            "relationship_type IN ('causes','amplifies','depends_on','mitigates','duplicates')",
+            name="chk_relationship_type",
+        ),
+        CheckConstraint("source_risk_id <> target_risk_id", name="chk_no_self_relationship"),
+        Index("risk_relationship_source_idx", "source_risk_id"),
+        Index("risk_relationship_target_idx", "target_risk_id"),
+    )
+
+    source_risk_id = Column(String, ForeignKey("risk.risk_id", ondelete="CASCADE"), primary_key=True)
+    target_risk_id = Column(String, ForeignKey("risk.risk_id", ondelete="CASCADE"), primary_key=True)
+    relationship_type = Column(String, primary_key=True)
+    notes = Column(Text, nullable=True)
+
+    source_risk = relationship(
+        "Risk", foreign_keys=[source_risk_id], backref="outgoing_relationships"
+    )
+    target_risk = relationship(
+        "Risk", foreign_keys=[target_risk_id], backref="incoming_relationships"
+    )
+
+
+# UC_ID_PATTERN mirrors app.schemas.relationship.UC_ID_PATTERN; kept as a plain
+# comment here (rather than a shared import) to avoid a schemas -> db import cycle.
+UC_ID_REGEX_SQL = r"^UC-(EG|AG|ET-S)-[0-9]+$"
+
+
+class RiskUseCase(Base):
+    __tablename__ = "risk_use_case"
+    __table_args__ = (
+        Index("risk_use_case_risk_id_idx", "risk_id"),
+        Index("risk_use_case_uc_id_idx", "uc_id"),
+    )
+
+    risk_id = Column(String, ForeignKey("risk.risk_id", ondelete="CASCADE"), primary_key=True)
+    uc_id = Column(String, primary_key=True)
+    source_project = Column(String, nullable=True)  # "EnergyGuard" | "AI.Grids" | "EnerTEF"
+    notes = Column(Text, nullable=True)
+
+    risk = relationship("Risk", backref="use_cases")
+
+
+@event.listens_for(RiskUseCase.__table__, "after_create")
+def create_uc_id_pattern_constraint(target, connection, **kw):
+    # Postgres-only: SQLite (used for the test suite, see tests/conftest.py) has no
+    # POSIX regex `~` operator, so a literal CheckConstraint on the model would fail
+    # DDL on every test run. The pattern is also enforced in Python at the schema
+    # layer (app.schemas.relationship.UC_ID_PATTERN) so SQLite-backed paths stay covered.
+    if connection.dialect.name != "postgresql":
+        return
+    connection.execute(
+        text(f"ALTER TABLE risk_use_case ADD CONSTRAINT chk_uc_id_pattern CHECK (uc_id ~ '{UC_ID_REGEX_SQL}')")
+    )
+
+
+@event.listens_for(Risk.__table__, "after_create")
+def create_risk_card_check_constraints(target, connection, **kw):
+    # Postgres-only: these are JSONB `->>'field'` extraction CHECKs, which SQLite
+    # (used for the test suite, see tests/conftest.py) cannot express. Pydantic
+    # enforces the same rules at the API layer (app/schemas/risk.py), so SQLite-backed
+    # paths stay covered; these constraints are the DB-level backstop for writes that
+    # bypass Pydantic. Mirrors create_uc_id_pattern_constraint above.
+    if connection.dialect.name != "postgresql":
+        return
+    connection.execute(
+        text(
+            "ALTER TABLE risk ADD CONSTRAINT chk_probability_level_range "
+            "CHECK ((card->>'probability_level') IS NULL OR (card->>'probability_level')::int BETWEEN 1 AND 5)"
+        )
+    )
+    connection.execute(
+        text(
+            "ALTER TABLE risk ADD CONSTRAINT chk_impact_level_range "
+            "CHECK ((card->>'impact_level') IS NULL OR (card->>'impact_level')::int BETWEEN 1 AND 5)"
+        )
+    )
+    connection.execute(
+        text(
+            "ALTER TABLE risk ADD CONSTRAINT chk_operational_priority_range "
+            "CHECK ((card->>'operational_priority') IS NULL OR (card->>'operational_priority')::int BETWEEN 1 AND 5)"
+        )
+    )
+    connection.execute(
+        text(
+            "ALTER TABLE risk ADD CONSTRAINT chk_itot_boundary_vocab "
+            "CHECK ((card->>'it_ot_boundary') IS NULL OR (card->>'it_ot_boundary') IN "
+            "('it_only','it_historian_dmz_input','itot_actuation','itot_readonly_no_actuation',"
+            "'itot_virtual_sensor','ot_direct_execution','itot_advisory_readonly'))"
+        )
+    )
 
 
 risk_card_index = Index("risk_card_gin_idx", Risk.card, postgresql_using="gin", postgresql_ops={"card": "jsonb_path_ops"})
