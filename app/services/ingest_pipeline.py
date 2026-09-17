@@ -62,6 +62,9 @@ ALLOWED_IMPACT_DIMENSIONS = {
     "financial",
     "reputation",
     "operational",
+    "social",
+    "ethical",
+    "legal",
 }
 
 IMPACT_DIMENSION_MAP = {
@@ -87,6 +90,15 @@ ALLOWED_SOURCE_PREFIXES = {
     "OSHA",
     "NASA",
     "US",
+    "RAND",
+    "IEA",
+    "CSIS",
+    "OECD",
+    "GARTNER",
+    "DOE",
+    "OWASP",
+    "GOV-UK",
+    "GREENAI",
 }
 
 REGULATION_ALIASES = {

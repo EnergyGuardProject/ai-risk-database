@@ -48,6 +48,58 @@ CATEGORY_DEFINITIONS: Dict[str, Dict[str, str]] = {
         "name": "Safety Incidents",
         "description": "Documented AI-related safety or operational incidents.",
     },
+    "cybersecurity.prompt_injection": {
+        "name": "Cybersecurity Prompt Injection",
+        "description": "Direct or indirect prompt injection attacks against LLM-integrated systems.",
+    },
+    "ethical.bias": {
+        "name": "Ethical Bias",
+        "description": "Socio-economic or demographic bias with an ethical/equity dimension beyond governance fairness.",
+    },
+    "technical.economic_attack": {
+        "name": "Technical Economic Attack",
+        "description": "Technical attacks aimed at inflicting financial harm (e.g. resource exhaustion, denial of wallet).",
+    },
+    "technical.systemic_failure": {
+        "name": "Technical Systemic Failure",
+        "description": "Emergent, unintended interactions between AI systems causing systemic technical failure.",
+    },
+    "privacy.data_leakage": {
+        "name": "Privacy Data Leakage",
+        "description": "Exposure or reconstruction of sensitive personal data from AI training or inference.",
+    },
+    "performance.drift": {
+        "name": "Performance Drift",
+        "description": "Model performance degradation as operating conditions move outside the training distribution.",
+    },
+    "performance.latency": {
+        "name": "Performance Latency",
+        "description": "Processing delays in AI systems that violate real-time or safety-critical timing constraints.",
+    },
+    "performance.efficiency": {
+        "name": "Performance Efficiency",
+        "description": "AI resource/energy consumption risks, including sustainability and ESG trade-offs.",
+    },
+    "performance.scalability": {
+        "name": "Performance Scalability",
+        "description": "Degradation of AI system performance as input scale exceeds tested dimensions.",
+    },
+    "performance.availability": {
+        "name": "Performance Availability",
+        "description": "AI system unavailability or failure to operate under degraded connectivity/infrastructure.",
+    },
+    "economic.market_manipulation": {
+        "name": "Economic Market Manipulation",
+        "description": "AI-driven market distortion, collusion, or manipulation risks.",
+    },
+    "economic.investment_risk": {
+        "name": "Economic Investment Risk",
+        "description": "Financial exposure from AI technology or infrastructure investment decisions.",
+    },
+    "economic.integration_cost": {
+        "name": "Economic Integration Cost",
+        "description": "Cost and schedule risk from integrating AI systems with legacy infrastructure.",
+    },
 }
 
 ALLOWED_CATEGORIES = set(CATEGORY_DEFINITIONS.keys())
@@ -132,6 +184,51 @@ ENERGY_CONTEXT_DEFINITIONS: Dict[str, Dict[str, str]] = {
         "name": "Substation Security",
         "description": "Physical and digital security, surveillance analytics.",
         "criticality": 4,
+    },
+    "customer_service": {
+        "name": "Customer Service",
+        "description": "LLM-based customer support agents and automated correspondence handling.",
+        "criticality": 2,
+    },
+    "grid_distribution": {
+        "name": "Grid Distribution",
+        "description": "Distribution-level equity, demand-response prioritisation, and service shedding decisions.",
+        "criticality": 3,
+    },
+    "grid_operations": {
+        "name": "Grid Operations",
+        "description": "General grid analytics and operational endpoints exposed to cost- or availability-sensitive workloads.",
+        "criticality": 3,
+    },
+    "microgrid_control": {
+        "name": "Microgrid Control",
+        "description": "Autonomous agents managing microgrid storage, frequency response, and islanding operations.",
+        "criticality": 4,
+    },
+    "smart_metering": {
+        "name": "Smart Metering",
+        "description": "Smart meter data collection, retention, and use for model training.",
+        "criticality": 3,
+    },
+    "transmission_management": {
+        "name": "Transmission Management",
+        "description": "Transmission-level forecasting and balancing under structural changes in the energy mix.",
+        "criticality": 3,
+    },
+    "substation_automation": {
+        "name": "Substation Automation",
+        "description": "Real-time automated fault detection and protection logic at substations.",
+        "criticality": 4,
+    },
+    "corporate_sustainability": {
+        "name": "Corporate Sustainability",
+        "description": "ESG and carbon-footprint reporting and accountability for AI infrastructure.",
+        "criticality": 2,
+    },
+    "wholesale_markets": {
+        "name": "Wholesale Markets",
+        "description": "Wholesale energy trading, bidding, and market-clearing operations.",
+        "criticality": 3,
     },
 }
 

@@ -98,12 +98,15 @@ def export_to_files(session: Session) -> Dict[str, Path]:
     json_path = export_dir / "eg_risks.json"
     json_path.write_bytes(export_json_bytes(session))
     csv_path = export_dir / "eg_risks.csv"
-    csv_path.write_text("".join(export_csv_stream(session)))
+    # newline="" avoids double-translating the \r\n line terminators that
+    # csv.writer already wrote into the stream (this double-translation is a
+    # no-op on Linux, but corrupts the file with blank rows on Windows).
+    csv_path.write_text("".join(export_csv_stream(session)), newline="")
 
     json_ts_path = export_dir / f"eg_risks_{timestamp}.json"
     csv_ts_path = export_dir / f"eg_risks_{timestamp}.csv"
     json_ts_path.write_bytes(json_path.read_bytes())
-    csv_ts_path.write_text(csv_path.read_text())
+    csv_ts_path.write_bytes(csv_path.read_bytes())
 
     _prune_old_exports(export_dir)
     return {
