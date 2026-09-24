@@ -127,7 +127,7 @@ The importer (and linter) normalises and enforces:
 - Automatic derivation of `lifecycle_stage` and `risk_summary`.
 - Deterministic merges using the normalised title/description hash (`merge_hash`) so repeated ingests remain idempotent.
 
-### Energy Context Vocabulary (To be updated)
+### Energy Context Vocabulary
 
 ```
 generation_renewables     Solar, wind, hydro, or other renewable generation assets.
@@ -146,6 +146,15 @@ control_rooms             Real-time supervision, operator decision support, huma
 transmission_planning     Grid expansion, capacity planning, load flow simulations.
 distributed_generation    DER forecasting, microgrids, virtual power plants.
 substation_security       Physical/digital security, surveillance analytics.
+customer_service          LLM-based customer support agents and automated correspondence handling.
+grid_distribution         Distribution-level equity, demand-response prioritisation, service shedding.
+grid_operations           General grid analytics/operational endpoints exposed to cost/availability risk.
+microgrid_control         Autonomous agents managing microgrid storage, frequency response, islanding.
+smart_metering            Smart meter data collection, retention, and use for model training.
+transmission_management   Transmission-level forecasting and balancing under structural grid-mix change.
+substation_automation     Real-time automated fault detection and protection logic at substations.
+corporate_sustainability  ESG and carbon-footprint reporting/accountability for AI infrastructure.
+wholesale_markets         Wholesale energy trading, bidding, and market-clearing operations.
 ```
 ### Editorial Review Feed
 

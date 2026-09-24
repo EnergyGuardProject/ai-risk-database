@@ -62,6 +62,9 @@ ALLOWED_IMPACT_DIMENSIONS = {
     "financial",
     "reputation",
     "operational",
+    "social",
+    "ethical",
+    "legal",
 }
 
 IMPACT_DIMENSION_MAP = {
@@ -87,6 +90,15 @@ ALLOWED_SOURCE_PREFIXES = {
     "OSHA",
     "NASA",
     "US",
+    "RAND",
+    "IEA",
+    "CSIS",
+    "OECD",
+    "GARTNER",
+    "DOE",
+    "OWASP",
+    "GOV-UK",
+    "GREENAI",
 }
 
 REGULATION_ALIASES = {
@@ -439,7 +451,7 @@ class CsvIngestor:
         energy_context, context_issues = self._normalize_contexts(row.get("energy_context", ""), row_num)
         issues.extend(context_issues)
         version = row.get("version", "").strip() or "1.0"
-        status = (row.get("status") or "seeded").strip()
+        status = (row.get("status") or "draft").strip()
 
         card: Dict[str, Any] = {
             "risk_name": risk_name,

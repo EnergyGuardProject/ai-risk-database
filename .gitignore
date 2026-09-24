@@ -9,8 +9,7 @@ __pycache__/
 .idea/
 .vscode/
 .exports/
-exports/*.json
-exports/*.csv
+exports/*
 .eggs/
 *.egg-info/
 .DS_Store

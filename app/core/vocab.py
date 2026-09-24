@@ -48,6 +48,58 @@ CATEGORY_DEFINITIONS: Dict[str, Dict[str, str]] = {
         "name": "Safety Incidents",
         "description": "Documented AI-related safety or operational incidents.",
     },
+    "cybersecurity.prompt_injection": {
+        "name": "Cybersecurity Prompt Injection",
+        "description": "Direct or indirect prompt injection attacks against LLM-integrated systems.",
+    },
+    "ethical.bias": {
+        "name": "Ethical Bias",
+        "description": "Socio-economic or demographic bias with an ethical/equity dimension beyond governance fairness.",
+    },
+    "technical.economic_attack": {
+        "name": "Technical Economic Attack",
+        "description": "Technical attacks aimed at inflicting financial harm (e.g. resource exhaustion, denial of wallet).",
+    },
+    "technical.systemic_failure": {
+        "name": "Technical Systemic Failure",
+        "description": "Emergent, unintended interactions between AI systems causing systemic technical failure.",
+    },
+    "privacy.data_leakage": {
+        "name": "Privacy Data Leakage",
+        "description": "Exposure or reconstruction of sensitive personal data from AI training or inference.",
+    },
+    "performance.drift": {
+        "name": "Performance Drift",
+        "description": "Model performance degradation as operating conditions move outside the training distribution.",
+    },
+    "performance.latency": {
+        "name": "Performance Latency",
+        "description": "Processing delays in AI systems that violate real-time or safety-critical timing constraints.",
+    },
+    "performance.efficiency": {
+        "name": "Performance Efficiency",
+        "description": "AI resource/energy consumption risks, including sustainability and ESG trade-offs.",
+    },
+    "performance.scalability": {
+        "name": "Performance Scalability",
+        "description": "Degradation of AI system performance as input scale exceeds tested dimensions.",
+    },
+    "performance.availability": {
+        "name": "Performance Availability",
+        "description": "AI system unavailability or failure to operate under degraded connectivity/infrastructure.",
+    },
+    "economic.market_manipulation": {
+        "name": "Economic Market Manipulation",
+        "description": "AI-driven market distortion, collusion, or manipulation risks.",
+    },
+    "economic.investment_risk": {
+        "name": "Economic Investment Risk",
+        "description": "Financial exposure from AI technology or infrastructure investment decisions.",
+    },
+    "economic.integration_cost": {
+        "name": "Economic Integration Cost",
+        "description": "Cost and schedule risk from integrating AI systems with legacy infrastructure.",
+    },
 }
 
 ALLOWED_CATEGORIES = set(CATEGORY_DEFINITIONS.keys())
@@ -133,9 +185,153 @@ ENERGY_CONTEXT_DEFINITIONS: Dict[str, Dict[str, str]] = {
         "description": "Physical and digital security, surveillance analytics.",
         "criticality": 4,
     },
+    "customer_service": {
+        "name": "Customer Service",
+        "description": "LLM-based customer support agents and automated correspondence handling.",
+        "criticality": 2,
+    },
+    "grid_distribution": {
+        "name": "Grid Distribution",
+        "description": "Distribution-level equity, demand-response prioritisation, and service shedding decisions.",
+        "criticality": 3,
+    },
+    "grid_operations": {
+        "name": "Grid Operations",
+        "description": "General grid analytics and operational endpoints exposed to cost- or availability-sensitive workloads.",
+        "criticality": 3,
+    },
+    "microgrid_control": {
+        "name": "Microgrid Control",
+        "description": "Autonomous agents managing microgrid storage, frequency response, and islanding operations.",
+        "criticality": 4,
+    },
+    "smart_metering": {
+        "name": "Smart Metering",
+        "description": "Smart meter data collection, retention, and use for model training.",
+        "criticality": 3,
+    },
+    "transmission_management": {
+        "name": "Transmission Management",
+        "description": "Transmission-level forecasting and balancing under structural changes in the energy mix.",
+        "criticality": 3,
+    },
+    "substation_automation": {
+        "name": "Substation Automation",
+        "description": "Real-time automated fault detection and protection logic at substations.",
+        "criticality": 4,
+    },
+    "corporate_sustainability": {
+        "name": "Corporate Sustainability",
+        "description": "ESG and carbon-footprint reporting and accountability for AI infrastructure.",
+        "criticality": 2,
+    },
+    "wholesale_markets": {
+        "name": "Wholesale Markets",
+        "description": "Wholesale energy trading, bidding, and market-clearing operations.",
+        "criticality": 3,
+    },
 }
 
 ALLOWED_CONTEXTS = set(ENERGY_CONTEXT_DEFINITIONS.keys())
+
+RELATIONSHIP_TYPE_DEFINITIONS: Dict[str, str] = {
+    "causes": "Source risk is a direct causal trigger for the target risk (e.g. a cascading OT failure chain).",
+    "amplifies": "Source risk increases the probability or impact of the target risk without directly causing it.",
+    "depends_on": "Source risk only materialises if the target risk's precondition is present.",
+    "mitigates": "Source risk's controls reduce the probability or impact of the target risk.",
+    "duplicates": "Source and target risks describe closely related but distinct findings that were not merged via merge_hash.",
+}
+
+ALLOWED_RELATIONSHIP_TYPES = set(RELATIONSHIP_TYPE_DEFINITIONS.keys())
+
+STATUS_DEFINITIONS: Dict[str, str] = {
+    "draft": "Newly ingested or authored; not yet reviewed.",
+    "pending_review": "Submitted for editorial review.",
+    "confirmed": "Reviewed and confirmed accurate, mirrors Scoping Register Column K 'CONFIRMED'.",
+    "pending_approval": "Awaiting governance sign-off, mirrors Scoping Register Column K 'PENDING APPROVAL'.",
+    "deprecated": "Superseded or withdrawn; retained for historical reference.",
+}
+
+ALLOWED_STATUSES = set(STATUS_DEFINITIONS.keys())
+
+UC_ID_PATTERN = r"^UC-(EG|AG|ET-S)-\d+$"
+
+# Source: D5.1_Step1_GOVERN_Methodology_v6.docx, Section 3.2.6, Column H
+# ("IT/OT Boundary"). Transcribed from the Scoping Register's data dictionary.
+ITOT_BOUNDARY_DEFINITIONS: Dict[str, Dict[str, str]] = {
+    "it_only": {
+        "name": "IT layer only; no OT interface",
+        "description": (
+            "AI operates entirely in the IT environment. Inputs from operational data "
+            "historians, APIs, or data lakes. No direct control of physical equipment. "
+            "Risk profile: data quality, model accuracy, GDPR, and supply chain (ML "
+            "library) risks. OT-specific risks do not apply."
+        ),
+    },
+    "it_historian_dmz_input": {
+        "name": "IT layer; OT sensor/SCADA inputs via historian/DMZ",
+        "description": (
+            "AI receives data from OT systems but the data flow is unidirectional "
+            "(OT -> IT via historian or DMZ). No AI output crosses into OT. Risk: data "
+            "integrity of OT inputs (adversarial sensor manipulation, historian "
+            "poisoning); distribution shift if OT operating conditions change without "
+            "model retraining."
+        ),
+    },
+    "itot_actuation": {
+        "name": "IT/OT interface — AI outputs actuate OT systems",
+        "description": (
+            "AI outputs (control recommendations, setpoints, schedules) cross the "
+            "IT/OT boundary and directly actuate physical equipment. Highest IT/OT "
+            "risk category. Activates Gap G4 risk entries: adversarial manipulation "
+            "of AI control outputs, insufficient latency for safety-critical real-time "
+            "control, IT security compromise propagating to physical equipment."
+        ),
+    },
+    "itot_readonly_no_actuation": {
+        "name": "IT/OT interface — AI reads OT data; no direct actuation",
+        "description": (
+            "AI reads protection relay, COMTRADE, or IED data from the OT layer but "
+            "does not send control commands back. Risk: relay data integrity "
+            "(manipulated fault records misleading the AI classifier), communication "
+            "protocol vulnerabilities (IEC 61850 GOOSE/SV), and the critical Gap G2 "
+            "risk: AI misclassification of a genuine fault = uncleared event = "
+            "protective relay cascade."
+        ),
+    },
+    "itot_virtual_sensor": {
+        "name": "IT/OT interface — AI virtual sensors replace SCADA measurements",
+        "description": (
+            "AI-generated virtual measurements substitute for missing real SCADA "
+            "readings in downstream grid management tools. Most subtle IT/OT risk: if "
+            "AI state estimates are treated as authoritative inputs by OT-adjacent "
+            "EMS/SCADA, systematic AI estimation errors propagate into operational "
+            "decisions without the usual SCADA measurement validation."
+        ),
+    },
+    "ot_direct_execution": {
+        "name": "OT environment — AI scenarios executed on physical equipment",
+        "description": (
+            "AI outputs are directly executed as operational commands on real "
+            "physical equipment (electrolysis stacks, test benches). No IT "
+            "intermediary. Highest physical safety risk category. Activates "
+            "functional safety failure modes: safety integrity level (SIL) "
+            "requirements for AI-generated operational scenarios, operator override "
+            "latency, emergency shutdown system bypass risks."
+        ),
+    },
+    "itot_advisory_readonly": {
+        "name": "IT/OT interface (read-only from OT) — advisory outputs only",
+        "description": (
+            "AI reads from OT sensor data but outputs are advisory analyses, reports, "
+            "or planning recommendations with no automated actuation pathway. Risk is "
+            "lower than full IT/OT interface but indirect actuation is possible if an "
+            "operator implements recommendations without independent validation."
+        ),
+    },
+}
+
+ALLOWED_ITOT_BOUNDARIES = set(ITOT_BOUNDARY_DEFINITIONS.keys())
 
 
 def get_category_display_name(category_id: str) -> str:
@@ -150,3 +346,10 @@ def get_context_display_name(context_id: str) -> str:
     if meta and meta.get("name"):
         return meta["name"]
     return _titleize(context_id)
+
+
+def get_itot_boundary_display_name(boundary_id: str) -> str:
+    meta = ITOT_BOUNDARY_DEFINITIONS.get(boundary_id)
+    if meta and meta.get("name"):
+        return meta["name"]
+    return _titleize(boundary_id)
